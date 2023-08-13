@@ -1,16 +1,13 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.gatling.app.Gatling;
-import io.gatling.core.config.GatlingConfiguration;
 import io.gatling.core.config.GatlingPropertiesBuilder;
 import org.apache.commons.io.FileUtils;
-import scala.collection.mutable.HashMap;
 import simulation.YamlSimulation;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Properties;
 
 public class Engine {
 
@@ -43,8 +40,6 @@ public class Engine {
         .simulationClass(YamlSimulation.class.getName())
         .resultsDirectory("gatling")
         .binariesDirectory("classes");
-    Properties systemProperties = System.getProperties();
-    GatlingConfiguration.load(new HashMap<>());
     Gatling.fromMap(props.build());
 
     String userdir = System.getProperty("user.dir");

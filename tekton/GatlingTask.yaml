@@ -41,5 +41,5 @@ spec:
         - name: LOAD_TEST_YAML_CONFIG
           value: $(workspaces.yaml-simulation.path)/$(params.yaml-simulation-file-name)
         - name: GATLING_RESULT_PATH
-          value: $(results.gatling-global-stats)
+          value: $(results.gatling-global-stats.path)
       image: docker.io/pratikkale/gatling
