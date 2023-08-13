@@ -1,0 +1,80 @@
+openapi: 3.0.4
+info:
+  title: My-API
+  version: 0.0.1
+servers:
+  - url: 'https://my.website.com'
+paths:
+  /employees:
+    post:
+      tags:
+        - article
+      summary: Add a new article to the store
+      description: Get an Object
+      operationId: getObject
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeInfo'
+      responses:
+        '200':
+          description: Successful operation
+components:
+  schemas:
+    EmployeeInfo:
+      description: general employee information
+      type: object
+      oneOf:
+        - $ref: '#/components/schemas/ManagementInfo'
+        - $ref: '#/components/schemas/GruntInfo'
+    GruntInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+          pattern: '^(\([0-9]{3}\) |[0-9]{3}-)[0-9]{3}-[0-9]{4}$'
+        id:
+          type: string
+          format: uuid
+        responsibilities:
+          $ref: '#/components/schemas/EmployeeResponsibilities'
+    ManagementInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          default: Bob
+        title:
+          type: string
+          default: Manager
+        responsibilities:
+          $ref: '#/components/schemas/ManagerResponsibilities'
+    ManagerResponsibilities:
+      description: manager responsibilities
+      type: array
+      items:
+        type: string
+        enum:
+          - Meetings
+          - Sleeping
+          - Planning
+          - Rehersing
+          - Supervising
+      default:
+        - meetings
+        - sleeping
+    EmployeeResponsibilities:
+      title: Employee Responsibilities
+      description: Employee responsibilities
+      type: array
+      items:
+        type: string
+        enum:
+          - cleaning
+          - organizing
+          - attending
+      default:
+        - cleaning

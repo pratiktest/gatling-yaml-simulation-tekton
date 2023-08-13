@@ -1,0 +1,211 @@
+openapi: "3.0.2"
+info:
+  description: "This defined a GET/POST payload for test results intended to be usable from any platform"
+  version: "5.0.1"
+  title: "Test Report Schema for reporting details on test builds"
+paths:
+  /yamlSimulation:
+    get:
+      description: "Get gatlingSimulation DSL"
+      responses:
+        '200':
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/gatlingSimulation'
+components:
+  schemas:
+    gatlingSimulation: # simulation references to a scenario in gatling
+      type: object
+      required:
+        - title
+        - runs # references a scenarioBuilder in gatling
+      properties:
+        title:
+          type: string
+        runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/run'
+    run:
+      type: object
+      required:
+        - title
+        - actions # references a chain in a chainBuilder
+        - loadTests
+      properties:
+        title:
+          type: string
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/action'
+        loadTests:
+          type: array
+          items:
+            $ref: '#/components/schemas/loadTest'
+    keyValue:
+      type: object
+      required:
+        - key
+        - value
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+    http:
+      type: object
+      required:
+        - title
+        - method
+        - endpoint
+      properties:
+        title:
+          type: string
+        method:
+          type: string
+          enum:
+            - get
+            - put
+            - post
+            - delete
+            - options
+        endpoint:
+          type: string
+        headers:
+          type: array
+          items:
+            $ref: '#/components/schemas/keyValue'
+        formParameters:
+          type: array
+          items:
+            $ref: '#/components/schemas/keyValue'
+        jsonStringBody:
+          type: string
+
+    feeder:
+      type: object
+      discriminator:
+        propertyName: feederType
+      properties:
+        feederType:
+          type: string
+        strategy:
+          type: string
+          enum:
+            - queue
+            - random
+            - shuffle
+            - circular
+
+    csvFeeder:
+      allOf:
+        - $ref: '#/components/schemas/feeder'
+        - type: object
+        - properties:
+            csvFileName:
+              type: string
+
+    listEntry:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/keyValue'
+
+    listFeeder:
+      allOf:
+        - $ref: '#/components/schemas/feeder'
+        - type: object
+        - properties:
+            listEntries:
+              type: array
+              items:
+                $ref: '#/components/schemas/listEntry'
+
+
+    action:
+      type: object
+      discriminator:
+        propertyName: actionType
+      required:
+        - actionType
+      properties:
+        actionType:
+          type: string
+          enum:
+            - execute
+            - pause
+    execute:
+      allOf:
+        - $ref: '#/components/schemas/action'
+        - type: object
+        - properties:
+            http:
+              type: object
+              $ref: '#/components/schemas/http'
+    pause:
+      allOf:
+        - $ref: '#/components/schemas/action'
+        - type: object
+        - properties:
+            seconds:
+              type: integer
+    feed:
+      allOf:
+        - $ref: '#/components/schemas/action'
+        - type: object
+        - properties:
+            feeder:
+              type: object
+              $ref: '#/components/schemas/feeder'
+    loadTest:
+      type: object
+      discriminator:
+        propertyName: loadTestType
+      required:
+        - loadTestType
+      properties:
+        loadTestType:
+          type: string
+          enum:
+            - constantUsersPerSec
+            - rampUsers
+            - atOnceUsers
+    constantUsersPerSec:
+      allOf:
+        - $ref: '#/components/schemas/loadTest'
+        - type: object
+          required:
+            - usersPerSec
+            - durationInSeconds
+        - properties:
+            usersPerSec:
+              type: integer
+            durationInSeconds:
+              type: long
+    rampUsers:
+      allOf:
+        - $ref: '#/components/schemas/loadTest'
+        - type: object
+          required:
+            - users
+            - durationInSeconds
+        - properties:
+            users:
+              type: integer
+            durationInSeconds:
+              type: long
+    atOnceUsers:
+      allOf:
+        - $ref: '#/components/schemas/loadTest'
+        - type: object
+          required:
+            - users
+        - properties:
+            users:
+              type: integer
+

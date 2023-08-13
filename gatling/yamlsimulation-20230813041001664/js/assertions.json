@@ -1,0 +1,10 @@
+{
+  "simulation": "simulation.YamlSimulation",
+  "simulationId": "yamlsimulation-20230813041001664",
+  "start": 1691899803325,
+  "description": "",
+  "scenarios": ["Test GET"],
+  "assertions": [
+
+  ]
+}

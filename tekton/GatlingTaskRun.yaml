@@ -1,0 +1,17 @@
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: gatling-task-run
+spec:
+  taskRef:
+    name: gatling
+  params:
+    - name: yaml-simulation-file-name
+      # file in catlin input workspace that contains newline delimited paths to task yaml files on which catlin validate will be applied
+      value: simulation.yaml
+  workspaces:
+    - name: yaml-simulation
+      configmap:
+        name: gatling-config
+    - name: gatling-files
+      emptyDir: { }
