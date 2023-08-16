@@ -1,0 +1,45 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: gatling
+  labels:
+    app.kubernetes.io/version: "0.2"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: CLI
+    tekton.dev/tags: cli
+    tekton.dev/displayName: "gatling"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    This task runs gatling simulation specified by user in a yaml file in a declarative way
+    User does not need to know any gatling dsl, java, scala or kotlin to run gatling simulation
+    User simply needs to supply the http methods and the load tests in a declarative yaml and this 
+    task will take care of running the gatling simulation and providing the results
+    After simulation finishes gatling simulation global stats are available in gatling-global-stats.
+  params:
+    - name: yaml-simulation-file-name
+      description: Name of file in gatling-config workspace that has simulation in declarative yaml format
+      type: string
+  results:
+    - name: gatling-global-stats
+      description: |
+        global stats for the current gatling run
+  workspaces:
+    - name: yaml-simulation
+      mountPath: /workspaces/yaml-simulation
+      description: |
+        workspace that contains declarative gatling yaml simulation $(params.yaml-simulation-file-name)
+    - name: gatling-files
+      mountPath: /workspaces/gatling-files
+      description: |
+        workspace that contains gatling output files
+  steps:
+    - name: gatling
+      workingDir: $(workspaces.gatling-files.path)
+      env:
+        - name: LOAD_TEST_YAML_CONFIG
+          value: $(workspaces.yaml-simulation.path)/$(params.yaml-simulation-file-name)
+        - name: GATLING_RESULT_PATH
+          value: $(results.gatling-global-stats.path)
+      image: docker.io/pratikkale/gatling

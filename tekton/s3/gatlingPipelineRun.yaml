@@ -1,0 +1,26 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: gatling-pipeline-run-s3
+spec:
+  pipelineRef:
+    name: gatling-pipeline-s3
+  params:
+    - name: yaml-simulation-file-name
+      value: simulation.yaml
+    - name: bucket
+      value: "prkale-gatling"
+    - name: s3EndpointUrl
+      value: "https://nuobject-playground.nuobject.io"
+    - name: s3VerifySsl
+      value: "false"
+  workspaces:
+    - name: yaml-simulation
+      configmap:
+        name: gatling-config
+    - name: gatling-files
+      persistentVolumeClaim:
+        claimName: mypvc-claim
+    - name: aws-secrets
+      secret:
+        secretName: aws-credentials

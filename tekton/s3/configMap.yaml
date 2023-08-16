@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gatling-config
+data:
+  simulation.yaml: |
+    title: Test GET scenario
+    runs:
+      - title: Test GET
+        actions:
+          - actionType: execute
+            http:
+              title: sample get req
+              method: get
+              headers:
+                - key: TD_JOB_CALLBACK_URL
+                  value: https://abc.com/v1/events
+              endpoint: https://dummy.restapiexample.com/api/v1/employees
+        loadTests:
+          - loadTestType: constantUsersPerSec
+            usersPerSec: 10
+            durationInSeconds: 5
+          - loadTestType: atOnceUsers
+            users: 10

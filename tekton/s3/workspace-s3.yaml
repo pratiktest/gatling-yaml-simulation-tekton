@@ -1,0 +1,56 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: workspace-s3
+  labels:
+    app.kubernetes.io/version: "0.2"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.17.0"
+    tekton.dev/categories: CLI
+    tekton.dev/tags: cli
+    tekton.dev/displayName: "aws cli"
+    tekton.dev/platforms: "linux/amd64"
+spec:
+  description: >-
+    This task uploads source workspace to s3
+  workspaces:
+    - name: source
+      description: workspace that needs to be uploaded to s3
+    - name: secrets
+      mountPath: /tekton/home/.aws
+      description: aws config and credentials. check https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
+  params:
+    - name: bucket
+      description: Name of the bucket into which we want to upload the workspace
+      type: string
+    - name: endpointUrl
+      description: Endpoint url of s3
+    - name: verifySsl
+      description: verify ssl certificate of s3
+      type: string
+      default: true
+  steps:
+    - name: awscli
+      env:
+        - name: ENDPOINT_URL
+          value: $(params.endpointUrl)
+        - name: VERIFY_SSL
+          value: $(params.verifySsl)
+        - name: BUCKET_NAME
+          value: $(params.bucket)
+        - name: SOURCE_PATH
+          value: $(workspaces.source.path)
+        - name: AWS_CONFIG_FILE
+          value: /tekton/home/.aws/config
+        - name: AWS_SHARED_CREDENTIALS_FILE
+          value: /tekton/home/.aws/credentials
+      image: docker.io/amazon/aws-cli:2.0.52@sha256:1506cec98a7101c935176d440a14302ea528b8f92fcaf4a6f1ea2d7ecef7edc4 #tag: 2.0.52
+      script: |
+        #!/usr/bin/env bash
+        if [[ "$VERIFY_SSL" == "false" ]]; then
+          echo "ssl is disabled"
+          aws s3 sync --no-verify-ssl --endpoint-url=$ENDPOINT_URL $SOURCE_PATH s3://$BUCKET_NAME/
+        else
+          echo "ssl is enabled"
+          aws s3 sync --endpoint-url=$ENDPOINT_URL $SOURCE_PATH s3://$BUCKET_NAME/
+        fi

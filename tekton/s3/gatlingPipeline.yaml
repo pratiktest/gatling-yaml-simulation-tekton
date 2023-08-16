@@ -1,0 +1,51 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: gatling-pipeline-s3
+spec:
+  params:
+    - name: yaml-simulation-file-name
+      description: The url we want to download file from
+      type: string
+    - name: bucket
+      description: bucket to upload gatling simulation
+      type: string
+    - name: s3EndpointUrl
+      description: s3 endpoint url
+      type: string
+    - name: s3VerifySsl
+      description: verify ssl certificate for s3
+      type: string
+  workspaces:
+    - name: yaml-simulation
+    - name: gatling-files
+    - name: aws-secrets
+  tasks:
+    - name: gatling
+      params:
+        - name: yaml-simulation-file-name
+          value: $(params.yaml-simulation-file-name)
+      taskRef:
+        name: gatling
+      workspaces:
+        - name: yaml-simulation
+          workspace: yaml-simulation
+        - name: gatling-files
+          workspace: gatling-files
+    - name: workspace-s3
+      taskRef:
+        name: workspace-s3
+      params:
+        - name: bucket
+          value: "prkale-gatling"
+        - name: endpointUrl
+          value: $(params.s3EndpointUrl)
+        - name: verifySsl
+          value: $(params.s3VerifySsl)
+      workspaces:
+        - name: source
+          workspace: gatling-files
+        - name: secrets
+          workspace: aws-secrets
+      runAfter:
+        - gatling
