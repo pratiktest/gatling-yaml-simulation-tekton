@@ -24,11 +24,11 @@ components:
       properties:
         title:
           type: string
-        runs:
+        scenarios:
           type: array
           items:
-            $ref: '#/components/schemas/run'
-    run:
+            $ref: '#/components/schemas/scenario'
+    scenario:
       type: object
       required:
         - title

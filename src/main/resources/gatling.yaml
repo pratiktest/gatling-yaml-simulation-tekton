@@ -1,5 +1,5 @@
 title: Test GET scenario
-runs:
+scenarios:
   - title: Test GET
     actions:
       - actionType: execute

@@ -12,7 +12,7 @@ import loadtest.LoadTestType;
 import org.openapitools.client.model.Action;
 import org.openapitools.client.model.GatlingSimulation;
 import org.openapitools.client.model.LoadTest;
-import org.openapitools.client.model.Run;
+import org.openapitools.client.model.Scenario;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,19 +35,15 @@ public class YamlSimulation extends Simulation {
       }
       File f = new File(path);
       System.out.println("value of path is " + path);
-//      System.out.println("path to gatling simulation declarative yaml file is " + path);
-//      InputStream gatlingFileInputStream = YamlSimulation.class
-//          .getClassLoader().getResourceAsStream("gatling.yaml");
-//      String result = IOUtils.toString(gatlingFileInputStream, StandardCharsets.UTF_8);
       gatlingSimulation = objectMapper.readValue(f, GatlingSimulation.class);
-      for (Run run : gatlingSimulation.getRuns()) {
-        ScenarioBuilder scenarioBuilder = scenario(run.getTitle());
-        for (Action action : run.getActions()) {
+      for (Scenario scenario : gatlingSimulation.getScenarios()) {
+        ScenarioBuilder scenarioBuilder = scenario(scenario.getTitle());
+        for (Action action : scenario.getActions()) {
           ActionType actionType = ActionTypeFactory.getActionType(action);
           scenarioBuilder = actionType.buildScenario(scenarioBuilder, action);
         }
         List<OpenInjectionStep> openInjectionSteps = new LinkedList<>();
-        for (LoadTest loadTest : run.getLoadTests()) {
+        for (LoadTest loadTest : scenario.getLoadTests()) {
           LoadTestType loadTestType = LoadTestFactory.getLoadTestType(loadTest);
           openInjectionSteps.add(loadTestType.getOpenInjectionStep(loadTest));
         }
@@ -59,13 +55,6 @@ public class YamlSimulation extends Simulation {
           setUp(scenarioBuilder.injectOpen(openInjectionSteps.toArray(OpenInjectionStep[]::new)));
         }
       }
-//      ScenarioBuilder scn = scenario("title")
-//          .exec(http("sample get")
-//              .get("https://dummy.restapiexample.com/api/v1/employees")).exec(http("another sample get")
-//              .get("https://dummy.restapiexample.com/api/v1/employees"));
-//      {
-//        setUp(scn.injectOpen(constantUsersPerSec(1.0).during(5)), scn.injectOpen(atOnceUsers(5)));
-//      }
 
     } catch (IOException e) {
       throw new RuntimeException(e);
